@@ -1,38 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"strconv"
-
-	//"log"
 	"encoding/json"
+	"fmt"
+	"go-gorilla-crud/models"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
-type User struct {
-	FullNme  string
-	UserName string
-	Email    string
-}
-
-// the Post is a struct  that  represent  a single  post
-
-type Post struct {
-	Title  string
-	Body   string
-	Author User
-}
-
-var data []Post = []Post{}
-
 func main() {
-
 	router := mux.NewRouter()
-
-	//router.HandleFunc("/test" ,test)
-	//router.HandleFunc("/add/{item}",addItems).Methods("GET", "DELETE")
 	router.HandleFunc("/posts", getItem).Methods("GET")
 	router.HandleFunc("/posts", addItems).Methods("POST")
 	router.HandleFunc("/posts/{id}", getPosts).Methods("GET")
@@ -40,26 +19,25 @@ func main() {
 	router.HandleFunc("/posts/{id}", patchItem).Methods("PATCH")
 	router.HandleFunc("/posts/{id}", deleteItem).Methods("DELETE")
 	http.ListenAndServe(":8080", router)
-
 }
+
+var data []models.Post = []models.Post{}
 
 func getPosts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "Application/json")
 
 	var idParam string = mux.Vars(r)["id"]
-
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-
 		w.WriteHeader(400)
-		w.Write([]byte("ID could  not be  converted  to  integer"))
+		w.Write([]byte("ID could not be converted to interger"))
+
 		return
 	}
 
 	if id >= len(data) {
 		w.WriteHeader(404)
-		w.Write([]byte("No data found with  specified ID"))
-		return
+		w.Write([]byte("No data found with specified id"))
 	}
 
 	post := data[id]
@@ -70,24 +48,20 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 func addItems(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "Application/json")
 
-	var newPost Post
-
+	var newPost models.Post
 	json.NewDecoder(r.Body).Decode(&newPost)
 
 	data = append(data, newPost)
 
 	json.NewEncoder(w).Encode(data)
-
 }
 
 func getItem(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Content-Type", "Application/json")
 
 	fmt.Println("Your details")
 
 	json.NewEncoder(w).Encode(data)
-
 }
 
 func updateItem(w http.ResponseWriter, r *http.Request) {
@@ -114,7 +88,7 @@ func updateItem(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	var updatedItem Post
+	var updatedItem models.Post
 
 	//updateItem := Post
 
@@ -150,7 +124,6 @@ func patchItem(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-
 	// get the  current  value
 
 	patchdata := data[id]
